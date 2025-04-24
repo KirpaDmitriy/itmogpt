@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИТМО GPT</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Спроси ИТМО GPT</h1>
+        <form action="/" method="get" class="form">
+            <input type="text" name="text" id="inputText" placeholder="Enter yo>
+            <button type="submit" class="button">Спросить</button>
+        </form>
+        <div id="response" class="response-box">
+            <span>ИТМО GPT:</span> {{ bot_response }}
+        </div>
+    </div>
+</body>
+</html>
