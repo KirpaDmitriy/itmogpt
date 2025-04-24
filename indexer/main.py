@@ -95,6 +95,6 @@ for top_url in top_urls:
 #   client.index(index=index_name, id=document['id'], body=document)
 #   print(f"Indexed document {document['id']}")
 
-  with open(f'/home/dima/itmogpt/knowledge_base/{top_url.strip('/').lstrip('https://').replace("/", "_")}.txt', 'w') as file:
+  with open(f'knowledge_base/{top_url.strip('/').lstrip('https://').replace("/", "_")}.txt', 'w') as file:
     # Write the string to the file
     file.write(content)
