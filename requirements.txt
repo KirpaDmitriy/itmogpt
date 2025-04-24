@@ -1,1 +1,8 @@
-
+fastapi==0.110.2
+uvicorn==0.34.0
+pydantic==2.7.1
+pytest==8.3.5
+httpx==0.28.1
+numpy==1.26.4
+yandex-cloud-ml-sdk==0.9.1
+yandexcloud==0.340.0
