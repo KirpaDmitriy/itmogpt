@@ -8,5 +8,4 @@ pytest==8.3.5
 starlette==0.37.2
 uvicorn==0.34.0
 yandex-cloud-ml-sdk==0.9.1
-yandexcloud==0.340.0
 yandexgpt-python==0.2.3
