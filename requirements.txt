@@ -7,5 +7,4 @@ pydantic_core==2.18.2
 pytest==8.3.5
 starlette==0.37.2
 uvicorn==0.34.0
-yandex-cloud-ml-sdk==0.9.1
 yandexgpt-python==0.2.3
