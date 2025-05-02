@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from runtime import app
+from runtime.yagpt import app
 
 client = TestClient(app)
 
