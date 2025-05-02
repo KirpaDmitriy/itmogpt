@@ -5,11 +5,8 @@ numpy==1.26.4
 pydantic==2.7.1
 pydantic_core==2.18.2
 pytest==8.3.5
-requests==2.31.0
 starlette==0.37.2
-urllib3==2.4.0
 uvicorn==0.34.0
 yandex-cloud-ml-sdk==0.9.1
 yandexcloud==0.340.0
 yandexgpt-python==0.2.3
-yarl==1.20.0
