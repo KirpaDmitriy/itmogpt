@@ -57,7 +57,7 @@ jobs:
 
     - name: Install backend dependencies
       run: |
-        cd back
+        cd runtime
         pip install -r requirements.txt
 
     - name: Run backend tests
