@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -7,7 +8,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  build-backend:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,44 +20,104 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install dependencies
+    - name: Cache backend dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-backend-${{ hashFiles('back/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-backend-
+
+    - name: Install backend dependencies
       run: |
+        cd runtime
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-  test:
+  test-backend:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-backend
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.9
 
-    - name: Restore cached dependencies
+    - name: Cache backend dependencies
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        key: ${{ runner.os }}-pip-backend-${{ hashFiles('back/requirements.txt') }}
         restore-keys: |
-          ${{ runner.os }}-pip-
+          ${{ runner.os }}-pip-backend-
 
-    - name: Install dependencies
+    - name: Install backend dependencies
       run: |
+        cd back
         pip install -r requirements.txt
 
-    - name: Run tests
+    - name: Run backend tests
       run: |
+        cd runtime
+        pytest
+
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Cache frontend dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-frontend-${{ hashFiles('front/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-frontend-
+
+    - name: Install frontend dependencies
+      run: |
+        cd front
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    needs: build-frontend
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Cache frontend dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-frontend-${{ hashFiles('front/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-frontend-
+
+    - name: Install frontend dependencies
+      run: |
+        cd front
+        pip install -r requirements.txt
+
+    - name: Run frontend tests
+      run: |
+        cd front
         pytest
