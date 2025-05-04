@@ -15,3 +15,4 @@
 - для `front` = `cd front; docker build -t myapp-front .`
 
 Запуск контейнера `runtime` требует наличия в переменных среды двух секретов: `YA_CATALOG_ID` и `YA_API_KEY`.
+https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/
