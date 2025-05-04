@@ -16,3 +16,6 @@
 
 Запуск контейнера `runtime` требует наличия в переменных среды двух секретов: `YA_CATALOG_ID` и `YA_API_KEY`.
 https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/
+
+## Команды запуска
+Старт фронта: `cd front; uvicorn frontback:app --reload --host 0.0.0.0 --port 8081`
