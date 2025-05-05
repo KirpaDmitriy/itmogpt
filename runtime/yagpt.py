@@ -18,6 +18,7 @@ async def generate_response(text: str):
     try:
         messages = [{"role": "user", "text": text}]
         response = await yandex_gpt.get_async_completion(messages=messages, timeout=60)
+        print(response)
         return response
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
