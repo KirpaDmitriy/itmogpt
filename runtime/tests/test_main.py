@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, patch
+import os
 
 with patch.dict(os.environ, {
     "YA_CATALOG_ID": "1234",
