@@ -6,7 +6,7 @@ import os
 with patch.dict(os.environ, {
     "BACKEND_URL": "1234",
 }):
-    from yagpt import app
+    from frontback import app
 
 client = TestClient(app)
 
