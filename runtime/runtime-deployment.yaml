@@ -14,9 +14,20 @@ spec:
     spec:
       containers:
       - name: runtime
-        image: myapp-runtime
+        image: cr.yandex/crpfobr25c755gi1uh6f/myapp-runtime:init
         ports:
         - containerPort: 8001
+        env:
+          - name: YA_CATALOG_ID
+            valueFrom:
+              secretKeyRef:
+                name: yagpt-secret
+                key: catalog_id
+          - name: YA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: yagpt-secret
+                key: api_key
 
 ---
 
@@ -31,4 +42,4 @@ spec:
     - protocol: TCP
       port: 8001
       targetPort: 8001
-  type: ClusterIP
+  type: LoadBalancer
