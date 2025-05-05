@@ -23,4 +23,5 @@ async def test_add_document():
     mock_transport = httpx.MockTransport(handle_request)
     async with httpx.AsyncClient(transport=mock_transport) as client:
         response = client.get("/?text=Hello")
+        assert response.status_code == 200
         assert response.text == ''
