@@ -36,7 +36,7 @@ def test_search(httpx_mock):
             <button type="submit" class="button">Спросить</button>
         </form>
         <div id="response" class="response-box">
-            <span>ИТМО GPT:</span> Error occurred: No response can be found for GET request on http://itmogpt-back/generate?text=Hello amongst: Match any request on http://itmogpt-back/generate
+            <span>ИТМО GPT:</span> Текстик
         </div>
     </div>
 </body>
