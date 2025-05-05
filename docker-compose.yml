@@ -21,8 +21,9 @@ services:
       dockerfile: Dockerfile
     networks:
       - app-network
-    env_file:
-      - ./.env
+    environment:
+      - YA_CATALOG_ID=${YA_CATALOG_ID}
+      - YA_API_KEY=${YA_API_KEY}
     restart: unless-stopped
 
 networks:
