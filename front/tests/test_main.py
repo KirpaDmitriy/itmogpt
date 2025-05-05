@@ -11,7 +11,7 @@ with patch.dict(os.environ, {
 
 client = TestClient(app)
 
-def test_search():
+def test_search(httpx_mock):
     httpx_mock.add_response(
         url="http://itmogpt-back/generate",
         json="Текстик",
