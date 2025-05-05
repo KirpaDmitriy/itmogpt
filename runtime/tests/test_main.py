@@ -11,7 +11,7 @@ with patch.dict(os.environ, {
 
 client = TestClient(app)
 
-def test_add_document():
+def test_search():
     with patch('yagpt.yandex_gpt.get_async_completion', new_callable=AsyncMock) as mock_completion:
         mock_completion.return_value = "Текстик"
         response = client.get("/generate?text=Hello")
