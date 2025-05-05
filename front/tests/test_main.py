@@ -11,8 +11,7 @@ with patch.dict(os.environ, {
 
 client = TestClient(app)
 
-@pytest.mark.asyncio
-async def test_search():
+def test_search():
     httpx_mock.add_response(
         url="http://itmogpt-back/generate",
         json="Текстик",
