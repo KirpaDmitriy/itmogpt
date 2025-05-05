@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, patch
 import os
+import httpx
 
 with patch.dict(os.environ, {
     "BACKEND_URL": "1234",
