@@ -11,7 +11,7 @@ with patch.dict(os.environ, {
 client = TestClient(app)
 
 @pytest.mark.asyncio
-async def test_add_document():
+async def test_search():
     async def handle_request(request):
         if request.url.path == "/generate":
             return httpx.Response(
