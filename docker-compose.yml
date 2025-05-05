@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - BACKEND_URL=http://back:8001
+    depends_on:
+      - back
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  back:
+    build:
+      context: ./runtime
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
