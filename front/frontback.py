@@ -3,17 +3,18 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 import httpx
 from fastapi.staticfiles import StaticFiles
+import os
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-BACKEND_URL = "http://0.0.0.0:8001/generate"
+BACKEND_URL = f"{os.environ['BACKEND_URL']}/generate"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, text: str = ""):
-    bot_response = "No question asked yet."
+    bot_response = "Задай свой вопрос"
     if text:
         async with httpx.AsyncClient() as client:
             try:
