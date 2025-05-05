@@ -61,7 +61,7 @@ jobs:
 
     - name: Run backend tests
       env:
-        PYTHONPATH: ./runtime
+        PYTHONPATH: runtime
       run: |
         cd runtime
         pytest
