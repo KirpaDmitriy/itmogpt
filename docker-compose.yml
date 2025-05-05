@@ -21,6 +21,8 @@ services:
       dockerfile: Dockerfile
     networks:
       - app-network
+    env_file:
+      - ./.env
     restart: unless-stopped
 
 networks:
