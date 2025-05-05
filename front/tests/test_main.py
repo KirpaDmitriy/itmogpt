@@ -14,7 +14,7 @@ client = TestClient(app)
 @pytest.mark.asyncio
 async def test_search():
     async def handle_request(request):
-        if request.url.path == "/generate":
+        if request.url.path == "/":
             return httpx.Response(
                 status_code=200,
                 json="Текстик"
