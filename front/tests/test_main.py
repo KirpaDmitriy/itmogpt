@@ -13,7 +13,7 @@ client = TestClient(app)
 
 def test_search(httpx_mock):
     httpx_mock.add_response(
-        url_pattern=r"http://itmogpt-back/generate(\?.*)?$",
+        url=r"http://itmogpt-back/generate?text=Hello",
         json="Текстик",
         status_code=200
     )
