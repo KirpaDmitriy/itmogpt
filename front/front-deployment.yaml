@@ -17,6 +17,9 @@ spec:
         image: cr.yandex/crpfobr25c755gi1uh6f/myapp-front:init
         ports:
         - containerPort: 8080
+        env:
+        - name: BACKEND_URL
+          value: "http://158.160.159.157:8001"
 
 ---
 
