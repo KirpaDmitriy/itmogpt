@@ -1,7 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
-from yagpt import app
 from unittest.mock import AsyncMock, patch
+
+with patch.dict(os.environ, {
+    "YA_CATALOG_ID": "1234",
+    "YA_API_KEY": "1234",
+}):
+    from yagpt import app
 
 client = TestClient(app)
 
