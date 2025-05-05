@@ -9,3 +9,8 @@ users:
   shell: /bin/bash
   ssh_authorized_keys:
   - ssh-ed25519 SECRET
+runcmd:
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sh get-docker.sh
+  - usermod -aG docker dragan
+  - systemctl enable docker
