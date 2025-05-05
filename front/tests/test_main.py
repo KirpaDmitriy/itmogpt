@@ -10,7 +10,8 @@ with patch.dict(os.environ, {
 
 client = TestClient(app)
 
-def test_add_document():
+@pytest.mark.asyncio
+async def test_add_document():
     async def handle_request(request):
         if request.url.path == "/generate":
             return httpx.Response(
