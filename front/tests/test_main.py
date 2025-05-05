@@ -17,6 +17,6 @@ def test_search():
         json="Текстик",
         status_code=200
     )
-    response = await client.get("/?text=Hello")
+    response = client.get("/?text=Hello")
     assert response.status_code == 200
     assert response.text == ''
