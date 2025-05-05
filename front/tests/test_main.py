@@ -23,6 +23,6 @@ async def test_search():
     
     mock_transport = httpx.MockTransport(handle_request)
     async with httpx.AsyncClient(transport=mock_transport) as client:
-        response = client.get("/?text=Hello")
+        response = await client.get("/?text=Hello")
         assert response.status_code == 200
         assert response.text == ''
