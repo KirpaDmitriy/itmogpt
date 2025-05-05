@@ -19,7 +19,7 @@ def test_search(httpx_mock):
     )
     response = client.get("/?text=Hello")
     assert response.status_code == 200
-    assert response.text == """  + <!DOCTYPE html>
+    assert response.text == """<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
