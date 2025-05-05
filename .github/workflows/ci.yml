@@ -60,8 +60,6 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run backend tests
-      env:
-        PYTHONPATH: runtime
       run: |
         cd runtime
         pytest
