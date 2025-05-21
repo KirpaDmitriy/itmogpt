@@ -35,6 +35,9 @@ sudo apt-get install -y cri-o cri-o-runc
 sudo systemctl enable crio
 sudo systemctl start crio
 sudo kubeadm init --pod-network-cidr=10.100.0.0/16
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 Для сброса `sudo kubeadm reset`
