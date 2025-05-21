@@ -38,6 +38,44 @@ sudo kubeadm init --pod-network-cidr=10.100.0.0/16
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
+sudo systemctl enable docker
+
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+kubectl get pods -n kube-system
+
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-front-to-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: runtime
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: front
+    ports:
+    - protocol: TCP
+      port: 8001
+EOF
+
+export BACKEND_IP=$(kubectl get service runtime-service -o jsonpath='{.spec.clusterIP}')
+
+# Обновление фронтенда с явным IP
+kubectl patch deployment front-deployment -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"front\",\"env\":[{\"name\":\"BACKEND_URL\",\"value\":\"http://$BACKEND_IP:8001\"}]}]}}}}"
+
+kubectl rollout restart deployment front-deployment
+kubectl rollout restart deployment runtime-deployment
 ```
 
 Для сброса `sudo kubeadm reset`
