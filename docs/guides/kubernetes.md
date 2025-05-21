@@ -26,3 +26,5 @@ sudo systemctl enable crio
 sudo systemctl start crio
 sudo kubeadm init --pod-network-cidr=10.100.0.0/16
 ```
+
+Для сброса `sudo kubeadm reset`
