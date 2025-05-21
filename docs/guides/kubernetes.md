@@ -76,7 +76,30 @@ kubectl patch deployment front-deployment -p "{\"spec\":{\"template\":{\"spec\":
 
 kubectl rollout restart deployment front-deployment
 kubectl rollout restart deployment runtime-deployment
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        ready
+        forward . 8.8.8.8 8.8.4.4
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+EOF
+kubectl rollout restart deployment -n kube-system coredns
 ```
+
+ Нужно также установить yc и авторизоваться в регистри.
 
 Для сброса `sudo kubeadm reset`
 Для запуска воркера: `sudo kubeadm join {IP} --token {TOKEN} --discovery-token-ca-cert-hash {HASH} --cri-socket unix:///var/run/crio/crio.sock`
