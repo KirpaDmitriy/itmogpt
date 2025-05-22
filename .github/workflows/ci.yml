@@ -120,3 +120,26 @@ jobs:
       run: |
         cd front
         pytest
+
+  push-to-registry:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Login to Yandex Container Registry
+      run: |
+        echo ${{ secrets.YANDEX_TOKEN }} |docker login   --username oauth   --password-stdin  cr.yandex
+        
+    - name: Build and push frontend image
+      run: |
+        docker build -t cr.yandex/crpfobr25c755gi1uh6f/myapp-front:latest ./front
+        docker push cr.yandex/crpfobr25c755gi1uh6f/myapp-front:latest
+    
+    - name: Build and push backend image
+      run: |
+        docker build -t cr.yandex/crpfobr25c755gi1uh6f/myapp-runtime:latest ./runtime
+        docker push cr.yandex/crpfobr25c755gi1uh6f/myapp-runtime:latest
