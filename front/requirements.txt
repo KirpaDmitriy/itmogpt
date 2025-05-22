@@ -7,3 +7,5 @@ pytest==8.3.5
 pytest-httpx==0.35.0
 starlette==0.37.2
 uvicorn==0.34.0
+prometheus-client==0.17.1
+python-multipart==0.0.6
