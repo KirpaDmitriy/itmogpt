@@ -1,3 +1,5 @@
+# Kubernetes
+## Скачивание и развертывание
 ```
 sudo apt update
 sudo apt upgrade
@@ -106,7 +108,8 @@ kubectl rollout restart deployment -n kube-system coredns
 
 `sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes`
 
-CPU:
+
+## Нагрузка на CPU и автомасштабирование
 ```
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 kubectl patch deployment runtime-deployment -p '{
@@ -167,3 +170,186 @@ EOF
 
 kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
 ```
+
+## Метрики и мониторинги
+Установка helm:
+```
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+```
+
+Прометея:
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+kubectl create namespace monitoring
+
+cat > prometheus-values.yaml << EOF
+server:
+  persistentVolume:
+    enabled: true
+    size: 10Gi
+  retention: 15d
+  
+alertmanager:
+  enabled: true
+  persistentVolume:
+    enabled: true
+    size: 2Gi
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+pushgateway:
+  enabled: true
+
+prometheus-node-exporter:
+  hostRootFsMount:
+    enabled: true
+EOF
+
+helm install prometheus prometheus-community/prometheus \
+  --namespace monitoring \
+  --values prometheus-values.yaml
+```
+
+Графаны:
+```
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+cat > grafana-values.yaml << EOF
+persistence:
+  enabled: true
+  size: 5Gi
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      url: http://prometheus-server.monitoring.svc.cluster.local
+      access: proxy
+      isDefault: true
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    kubernetes-pod-metrics:
+      gnetId: 6417
+      revision: 1
+      datasource: Prometheus
+    kubernetes-cluster:
+      gnetId: 7249
+      revision: 1
+      datasource: Prometheus
+    node-exporter:
+      gnetId: 1860
+      revision: 23
+      datasource: Prometheus
+    app-metrics:
+      gnetId: 10280
+      revision: 1
+      datasource: Prometheus
+
+service:
+  type: LoadBalancer
+
+adminPassword: strongpassword
+EOF
+
+helm install grafana grafana/grafana \
+  --namespace monitoring \
+  --values grafana-values.yaml
+```
+
+Настройка:
+```
+kubectl patch deployment runtime-deployment --type=json -p='[
+  {
+    "op": "add", 
+    "path": "/spec/template/metadata/annotations", 
+    "value": {
+      "prometheus.io/scrape": "true",
+      "prometheus.io/port": "8080",
+      "prometheus.io/path": "/metrics"
+    }
+  }
+]'
+```
+
+Сервис-монитор:
+```
+cat > runtime-servicemonitor.yaml << EOF
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: runtime-monitor
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: runtime
+  endpoints:
+  - port: http
+    interval: 15s
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+    - default
+EOF
+
+kubectl apply -f runtime-servicemonitor.yaml
+```
+
+Починка:
+```
+cat > grafana-values-no-pv.yaml << EOF
+persistence:
+  enabled: false
+
+service:
+  type: NodePort
+EOF
+
+helm upgrade grafana grafana/grafana \
+  --namespace monitoring \
+  --values grafana-values-no-pv.yaml
+
+cat > prometheus-values-no-pv.yaml << EOF
+server:
+  persistentVolume:
+    enabled: false
+
+alertmanager:
+  persistentVolume:
+    enabled: false
+EOF
+
+helm upgrade prometheus prometheus-community/prometheus \
+  --namespace monitoring \
+  --values prometheus-values-no-pv.yaml
+```
+
