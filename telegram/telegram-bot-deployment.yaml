@@ -1,0 +1,43 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegram-bot-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telegram-bot
+  template:
+    metadata:
+      labels:
+        app: telegram-bot
+    spec:
+      containers:
+      - name: telegram-bot
+        image: cr.yandex/crpfobr25c755gi1uh6f/telegram-bot:latest
+        env:
+        - name: BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: BOT_TOKEN
+        - name: BACKEND_URL
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: BACKEND_URL
+        - name: ALLOWED_USERS
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-secrets
+              key: ALLOWED_USERS
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
