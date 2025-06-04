@@ -1,5 +1,3 @@
-name: CI
-
 on:
   push:
     branches: [main]
@@ -23,7 +21,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-backend-${{ hashFiles('back/requirements.txt') }}
+        key: ${{ runner.os }}-pip-backend-${{ hashFiles('runtime/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-backend-
 
@@ -50,7 +48,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-backend-${{ hashFiles('back/requirements.txt') }}
+        key: ${{ runner.os }}-pip-backend-${{ hashFiles('runtime/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-backend-
 
@@ -58,11 +56,25 @@ jobs:
       run: |
         cd runtime
         pip install -r requirements.txt
+        pip install pytest-cov
 
-    - name: Run backend tests
+    - name: Run backend tests with coverage
       run: |
         cd runtime
-        pytest
+        mkdir -p test-reports
+        pytest \
+          --cov=. \
+          --cov-report=xml:../coverage-backend.xml \
+          --cov-report=term-missing \
+          --junitxml=test-reports/pytest.xml
+
+    - name: Upload backend coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-coverage
+        path: |
+          coverage-backend.xml
+          runtime/test-reports/
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -115,15 +127,90 @@ jobs:
       run: |
         cd front
         pip install -r requirements.txt
+        pip install pytest-cov
 
-    - name: Run frontend tests
+    - name: Run frontend tests with coverage
       run: |
         cd front
-        pytest
+        mkdir -p test-reports
+        pytest \
+          --cov=. \
+          --cov-report=xml:../coverage-frontend.xml \
+          --cov-report=term-missing \
+          --junitxml=test-reports/pytest.xml
+
+    - name: Upload frontend coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-coverage
+        path: |
+          coverage-frontend.xml
+          front/test-reports/
+
+  sonarqube-analysis:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Download backend coverage
+      uses: actions/download-artifact@v3
+      with:
+        name: backend-coverage
+        path: .
+
+    - name: Download frontend coverage
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-coverage
+        path: .
+
+    - name: Prepare coverage reports
+      run: |
+        mkdir -p test-reports
+        if [ -f "runtime/test-reports/pytest.xml" ]; then
+          cp runtime/test-reports/pytest.xml test-reports/pytest-backend.xml
+        fi
+        if [ -f "front/test-reports/pytest.xml" ]; then
+          cp front/test-reports/pytest.xml test-reports/pytest-frontend.xml
+        fi
+
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      with:
+        projectBaseDir: .
+        args: >
+          -Dsonar.projectKey=itmo-gpt
+          -Dsonar.projectName="ITMO GPT"
+          -Dsonar.projectVersion=1.0
+          -Dsonar.sources=runtime,front
+          -Dsonar.exclusions=/venv/,/pycache/,/migrations/,/static/,/media/,/.git/,/tests/,/test_,/htmlcov/,/.pytest_cache/,/node_modules/,/init.py,/settings.py,**/manage.py
+          -Dsonar.tests=runtime/tests,front/tests
+          -Dsonar.test.inclusions=/test_*.py,/*_test.py,/tests//*.py
+          -Dsonar.python.coverage.reportPaths=coverage-backend.xml,coverage-frontend.xml
+          -Dsonar.python.xunit.reportPath=test-reports/pytest-backend.xml,test-reports/pytest-frontend.xml
+          -Dsonar.coverage.exclusions=/tests/,/test_,/venv/,/pycache/,/migrations/,/settings.py,/manage.py
+          -Dsonar.sourceEncoding=UTF-8
+          -Dsonar.python.version=3.9
+          -Dsonar.qualitygate.wait=true
+
+    - name: SonarQube Quality Gate check
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   push-to-registry:
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
+    needs: [test-backend, test-frontend, sonarqube-analysis]
     if: github.ref == 'refs/heads/main'
     
     steps:
