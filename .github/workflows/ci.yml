@@ -230,3 +230,25 @@ jobs:
       run: |
         docker build -t cr.yandex/crpfobr25c755gi1uh6f/myapp-runtime:latest ./runtime
         docker push cr.yandex/crpfobr25c755gi1uh6f/myapp-runtime:latest
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [push-to-registry]
+    if: github.ref == 'refs/heads/main'
+    environment: production  # это создаст кнопку для деплоя
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup kubectl
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+        
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s/
+        kubectl rollout restart deployment/myapp-frontend
+        kubectl rollout restart deployment/myapp-backend
+        kubectl rollout status deployment/myapp-frontend
+        kubectl rollout status deployment/myapp-backend
