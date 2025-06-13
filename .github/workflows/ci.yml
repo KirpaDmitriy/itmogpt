@@ -221,7 +221,7 @@ jobs:
 
   sonarqube-analysis:
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
+    needs: [test-backend, test-frontend, test-telegram]
 
     steps:
     - name: Checkout repository
@@ -291,7 +291,7 @@ jobs:
 
   push-to-registry:
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend, test-telegram, sonarqube-analysis]
+    needs: [test-backend, test-frontend, test-telegram]
     if: github.ref == 'refs/heads/main'
     
     steps:
