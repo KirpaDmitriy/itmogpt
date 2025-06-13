@@ -206,7 +206,7 @@ jobs:
         mkdir -p test-reports
         pytest \
           --cov=. \
-          --cov-report=xml:../coverage-frontend.xml \
+          --cov-report=xml:../coverage-telegram.xml \
           --cov-report=term-missing \
           --junitxml=test-reports/pytest.xml
 
