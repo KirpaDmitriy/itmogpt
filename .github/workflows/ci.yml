@@ -147,6 +147,78 @@ jobs:
           coverage-frontend.xml
           front/test-reports/
 
+  build-telegram:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Cache telegram dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-telegram-${{ hashFiles('telegram/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-telegram-
+
+    - name: Install frontend dependencies
+      run: |
+        cd telegram
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+  test-telegram:
+    runs-on: ubuntu-latest
+    needs: build-telegram
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Cache telegram dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-telegram-${{ hashFiles('telegram/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-telegram-
+
+    - name: Install telegram dependencies
+      run: |
+        cd telegram
+        pip install -r requirements.txt
+        pip install pytest-cov
+
+    - name: Run telegram tests with coverage
+      run: |
+        cd telegram
+        mkdir -p test-reports
+        pytest \
+          --cov=. \
+          --cov-report=xml:../coverage-frontend.xml \
+          --cov-report=term-missing \
+          --junitxml=test-reports/pytest.xml
+
+    - name: Upload telegram coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: telegram-coverage
+        path: |
+          coverage-telegram.xml
+          telegram/test-reports/
+
+
   sonarqube-analysis:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
@@ -169,6 +241,12 @@ jobs:
         name: frontend-coverage
         path: .
 
+    - name: Download telegram coverage
+      uses: actions/download-artifact@v4
+      with:
+        name: telegram-coverage
+        path: .
+
     - name: Prepare coverage reports
       run: |
         mkdir -p test-reports
@@ -177,6 +255,9 @@ jobs:
         fi
         if [ -f "front/test-reports/pytest.xml" ]; then
           cp front/test-reports/pytest.xml test-reports/pytest-frontend.xml
+        fi
+        if [ -f "telegram/test-reports/pytest.xml" ]; then
+          cp telegram/test-reports/pytest.xml test-reports/pytest-telegram.xml
         fi
 
     - name: SonarQube Scan
@@ -190,12 +271,12 @@ jobs:
           -Dsonar.projectKey=itmo-gpt
           -Dsonar.projectName="ITMO GPT"
           -Dsonar.projectVersion=1.0
-          -Dsonar.sources=runtime,front
+          -Dsonar.sources=runtime,front,telegram
           -Dsonar.exclusions=/venv/,/pycache/,/migrations/,/static/,/media/,/.git/,/tests/,/test_,/htmlcov/,/.pytest_cache/,/node_modules/,/init.py,/settings.py,**/manage.py
-          -Dsonar.tests=runtime/tests,front/tests
+          -Dsonar.tests=runtime/tests,front/tests,telegram/tests
           -Dsonar.test.inclusions=/test_*.py,/*_test.py,/tests//*.py
-          -Dsonar.python.coverage.reportPaths=coverage-backend.xml,coverage-frontend.xml
-          -Dsonar.python.xunit.reportPath=test-reports/pytest-backend.xml,test-reports/pytest-frontend.xml
+          -Dsonar.python.coverage.reportPaths=coverage-backend.xml,coverage-frontend.xml,coverage-telegram.xml
+          -Dsonar.python.xunit.reportPath=test-reports/pytest-backend.xml,test-reports/pytest-frontend.xml,test-reports/pytest-telegram.xml
           -Dsonar.coverage.exclusions=/tests/,/test_,/venv/,/pycache/,/migrations/,/settings.py,/manage.py
           -Dsonar.sourceEncoding=UTF-8
           -Dsonar.python.version=3.9
@@ -210,7 +291,7 @@ jobs:
 
   push-to-registry:
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend, sonarqube-analysis]
+    needs: [test-backend, test-frontend, test-telegram, sonarqube-analysis]
     if: github.ref == 'refs/heads/main'
     
     steps:
@@ -230,6 +311,11 @@ jobs:
       run: |
         docker build -t cr.yandex/crpfobr25c755gi1uh6f/myapp-runtime:latest ./runtime
         docker push cr.yandex/crpfobr25c755gi1uh6f/myapp-runtime:latest
+    
+    - name: Build and push telegram image
+      run: |
+        docker build -t cr.yandex/crpfobr25c755gi1uh6f/myapp-telegram:latest ./runtime
+        docker push cr.yandex/crpfobr25c755gi1uh6f/myapp-telegram:latest
   deploy:
     runs-on: ubuntu-latest
     needs: [push-to-registry]
@@ -249,7 +335,10 @@ jobs:
       run: |
         kubectl apply -f runtime/runtime-deployment.yaml
         kubectl apply -f front/front-deployment.yaml
+        kubectl apply -f telegram/telegram-deployment.yaml
         kubectl rollout restart deployment/myapp-frontend
         kubectl rollout restart deployment/myapp-backend
+        kubectl rollout restart deployment/myapp-telegram
         kubectl rollout status deployment/myapp-frontend
         kubectl rollout status deployment/myapp-backend
+        kubectl rollout status deployment/myapp-telegram
