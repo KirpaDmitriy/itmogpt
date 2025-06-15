@@ -1,8 +1,10 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: telegram-bot-deployment
+  name: telegram-bot
+  namespace: myapp
+  labels:
+    app: telegram-bot
 spec:
   replicas: 1
   selector:
@@ -13,6 +15,8 @@ spec:
       labels:
         app: telegram-bot
     spec:
+      imagePullSecrets:
+      - name: yc-registry-secret
       containers:
       - name: telegram-bot
         image: cr.yandex/crpfobr25c755gi1uh6f/telegram-bot:latest
@@ -22,22 +26,17 @@ spec:
             secretKeyRef:
               name: telegram-bot-secrets
               key: BOT_TOKEN
-        - name: BACKEND_URL
-          valueFrom:
-            secretKeyRef:
-              name: telegram-bot-secrets
-              key: BACKEND_URL
         - name: ALLOWED_USERS
           valueFrom:
             secretKeyRef:
               name: telegram-bot-secrets
               key: ALLOWED_USERS
-        - name: LOG_LEVEL
-          value: "INFO"
+        - name: BACKEND_URL
+          value: "http://myapp-backend-service.myapp.svc.cluster.local:8001/generate"
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            cpu: 50m
+            memory: 64Mi
           limits:
-            memory: "256Mi"
-            cpu: "200m"
+            cpu: 200m
+            memory: 256Mi
