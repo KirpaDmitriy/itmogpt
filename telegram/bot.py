@@ -60,7 +60,7 @@ class TelegramBot:
                 response.raise_for_status()
                 bot_response = response.json()
                 
-                await update.message.reply_text(bot_response)
+                await update.message.reply_text("Ololo:" + bot_response)
                 
         except Exception as e:
             logger.error(f"Error: {e}")
