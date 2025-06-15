@@ -340,7 +340,7 @@ jobs:
         
         # kubectl rollout status deployment/myapp-frontend --timeout=300s
         # kubectl rollout status deployment/myapp-backend --timeout=300s
-        kubectl rollout status deployment/myapp-telegram --timeout=300s --insecure-skip-tls-verify
+        kubectl rollout status deployment/telegram-bot --timeout=300s --insecure-skip-tls-verify
         
         echo "✅ All deployments updated successfully"
         kubectl get pods -n myapp --insecure-skip-tls-verify
