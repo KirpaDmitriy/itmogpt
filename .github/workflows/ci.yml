@@ -315,7 +315,7 @@ jobs:
     
     - name: Build and push telegram image
       run: |
-        docker build -t cr.yandex/crpfobr25c755gi1uh6f/myapp-telegram:latest ./runtime
+        docker build -t cr.yandex/crpfobr25c755gi1uh6f/myapp-telegram:latest ./telegram
         docker push cr.yandex/crpfobr25c755gi1uh6f/myapp-telegram:latest
   deploy:
     runs-on: ubuntu-latest
