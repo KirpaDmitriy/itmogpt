@@ -334,9 +334,9 @@ jobs:
         
     - name: Deploy to Kubernetes
       run: |
-        kubectl apply -f runtime/runtime-deployment.yaml --validate=false
-        kubectl apply -f front/front-deployment.yaml --validate=false
-        kubectl apply -f telegram/telegram-deployment.yaml --validate=false
+        kubectl apply -f runtime/runtime-deployment.yaml --validate=false --insecure-skip-tls-verify
+        kubectl apply -f front/front-deployment.yaml --validate=false --insecure-skip-tls-verify
+        kubectl apply -f telegram/telegram-deployment.yaml --validate=false --insecure-skip-tls-verify
         
         kubectl patch deployment myapp-frontend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
         kubectl patch deployment myapp-backend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
