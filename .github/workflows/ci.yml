@@ -320,7 +320,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [push-to-registry]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     environment: production
     
     steps:
@@ -337,9 +337,14 @@ jobs:
         kubectl apply -f runtime/runtime-deployment.yaml
         kubectl apply -f front/front-deployment.yaml
         kubectl apply -f telegram/telegram-deployment.yaml
-        kubectl rollout restart deployment/myapp-frontend
-        kubectl rollout restart deployment/myapp-backend
-        kubectl rollout restart deployment/myapp-telegram
-        kubectl rollout status deployment/myapp-frontend
-        kubectl rollout status deployment/myapp-backend
-        kubectl rollout status deployment/myapp-telegram
+        
+        kubectl patch deployment myapp-frontend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
+        kubectl patch deployment myapp-backend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
+        kubectl patch deployment myapp-telegram -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
+        
+        kubectl rollout status deployment/myapp-frontend --timeout=300s
+        kubectl rollout status deployment/myapp-backend --timeout=300s
+        kubectl rollout status deployment/myapp-telegram --timeout=300s
+        
+        echo "✅ All deployments updated successfully"
+        kubectl get pods -n myapp
