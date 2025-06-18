@@ -334,6 +334,16 @@ jobs:
         
     - name: Deploy to Kubernetes
       run: |
+        echo "=== Testing kubectl connection ==="
+        kubectl version --client --insecure-skip-tls-verify
+        kubectl get nodes --insecure-skip-tls-verify
+        
+        echo "=== Checking deployments ==="
+        kubectl get deployments -n myapp --insecure-skip-tls-verify
+
+        echo "=== Testing permissions ==="
+        kubectl auth can-i patch deployments -n myapp --insecure-skip-tls-verify
+        
         # kubectl patch deployment myapp-frontend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
         # kubectl patch deployment myapp-backend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
         TIMESTAMP=$(date +%s)
