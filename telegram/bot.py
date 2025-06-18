@@ -65,12 +65,10 @@ class TelegramBot:
                 await update.message.reply_text(bot_response)
                 
         except Exception as e:
-            logger.error(f"Exception occurred:")
+            logger.error(f"Exception occurred: {e}", exc_info=True)
             logger.error(f"  Type: {type(e).__name__}")
             logger.error(f"  Message: {str(e)}")
             logger.error(f"  Args: {e.args}")
-            logger.error(f"  Line: {sys.exc_info()[2].tb_lineno}")
-            logger.error(f"Full traceback:\n{traceback.format_exc()}")
             await update.message.reply_text("❌ Ошибка при обработке запроса.")
     
     def run(self):
