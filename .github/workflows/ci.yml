@@ -336,7 +336,8 @@ jobs:
       run: |
         # kubectl patch deployment myapp-frontend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
         # kubectl patch deployment myapp-backend -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}"
-        kubectl patch deployment telegram-bot -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"date +'%s'\"}}}}}" --insecure-skip-tls-verify
+        TIMESTAMP=$(date +%s)
+        kubectl patch deployment telegram-bot -n myapp -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"date\":\"$TIMESTAMP\"}}}}}"
         
         # kubectl rollout status deployment/myapp-frontend --timeout=300s
         # kubectl rollout status deployment/myapp-backend --timeout=300s
