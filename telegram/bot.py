@@ -56,7 +56,6 @@ class TelegramBot:
         
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                await update.message.reply_text("❌ Ошибка при обработке запроса.")
                 
                 response = await client.get(BACKEND_URL, params={"text": text})
                 response.raise_for_status()
