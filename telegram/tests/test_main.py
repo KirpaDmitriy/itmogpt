@@ -4,8 +4,11 @@ from unittest.mock import Mock, AsyncMock, patch
 from telegram import Update, User, Message, Chat
 from telegram.ext import ContextTypes
 import httpx
+import sys
 
-from telegram_bot import TelegramBot
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from telegram.bot import TelegramBot, main
 
 class TestTelegramBot:
     
