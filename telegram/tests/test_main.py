@@ -6,9 +6,13 @@ from telegram.ext import ContextTypes
 import httpx
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from telegram.bot import TelegramBot, main
+import bot
+from bot import TelegramBot, main
+
+from telegram import Update, User, Message, Chat
+from telegram.ext import ContextTypes
 
 class TestTelegramBot:
     
